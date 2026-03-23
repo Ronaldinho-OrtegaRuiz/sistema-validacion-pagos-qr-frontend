@@ -97,7 +97,7 @@ export default function LoginCard() {
       // Mock: si quieres validación real, luego conectamos API.
       setCookie("auth_user", u, 60 * 60 * 24 * 7);
 
-      router.push("/");
+      router.push("/dashboard");
     } catch {
       setError("No se pudo iniciar sesión. Intenta nuevamente.");
     } finally {
