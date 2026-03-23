@@ -1,6 +1,6 @@
 "use client";
 
-const PAGE_SIZE_OPTIONS = [10, 20, 30] as const;
+import { PAGE_SIZE_OPTIONS } from "./constants";
 
 type Props = {
   total: number;
@@ -10,6 +10,7 @@ type Props = {
   onPageChange: (p: number) => void;
   onPageSizeChange: (n: number) => void;
   loading?: boolean;
+  totalLabel?: string;
 };
 
 export default function PaymentsPaginationView({
@@ -20,6 +21,7 @@ export default function PaymentsPaginationView({
   onPageChange,
   onPageSizeChange,
   loading,
+  totalLabel = "Total",
 }: Props) {
   const windowSize = 5;
   const safePages = Math.max(1, pages || 1);
@@ -40,7 +42,7 @@ export default function PaymentsPaginationView({
           className="text-base font-semibold"
           style={{ color: "var(--primary-600)" }}
         >
-          Total de pagos hoy: {total}
+          {totalLabel}: {total}
         </div>
         <label className="flex items-center gap-2">
           <span

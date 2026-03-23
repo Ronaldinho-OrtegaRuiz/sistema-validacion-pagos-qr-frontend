@@ -8,10 +8,15 @@ import {
   getPaymentsWebSocketUrl,
   postPollNow,
   type PaymentItem,
+  type PaymentsQueryParams,
 } from "@/lib/payments";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ClientsTable from "./ClientsTable";
+import { DEFAULT_PAGE_SIZE } from "./constants";
+import DateFilterControls, {
+  type PaymentDateMode,
+} from "./DateFilterControls";
 import PaymentsPaginationView from "./PaymentsPaginationView";
 import StoreBadges, { DROGUERIA_RICKY_ID } from "./StoreBadges";
 
@@ -31,14 +36,40 @@ function errorMessage(body: unknown, fallback: string): string {
   return fallback;
 }
 
+function buildDateQuery(
+  mode: PaymentDateMode,
+  today: string,
+  specificDate: string,
+  rangeFrom: string,
+  rangeTo: string
+): Pick<PaymentsQueryParams, "on_date" | "date_from" | "date_to"> {
+  if (mode === "especifica") {
+    return { on_date: specificDate || today };
+  }
+  let from = rangeFrom;
+  let to = rangeTo;
+  if (from && to && from > to) {
+    [from, to] = [to, from];
+  }
+  if (from && to) {
+    return { date_from: from, date_to: to };
+  }
+  // Rango incompleto: mismo día (evita pedir todo el histórico sin filtro)
+  return { on_date: today };
+}
+
 export default function DashboardPaymentsSection() {
   const router = useRouter();
   const toast = useToast();
 
   const [drogueriaId, setDrogueriaId] = useState(DROGUERIA_RICKY_ID);
-  const [onDate] = useState(() => todayOnDateLocal());
+  const [dateMode, setDateMode] = useState<PaymentDateMode>("especifica");
+  const [specificDate, setSpecificDate] = useState(() => todayOnDateLocal());
+  const [rangeFrom, setRangeFrom] = useState(() => todayOnDateLocal());
+  const [rangeTo, setRangeTo] = useState(() => todayOnDateLocal());
+
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sort, setSort] = useState<"asc" | "desc">("desc");
 
   const [items, setItems] = useState<PaymentItem[]>([]);
@@ -49,15 +80,33 @@ export default function DashboardPaymentsSection() {
 
   const loadRef = useRef<() => Promise<void>>(undefined);
 
+  const totalLabel = useMemo(() => {
+    const today = todayOnDateLocal();
+    if (dateMode === "especifica") return `Total (${specificDate || today})`;
+    if (rangeFrom && rangeTo) {
+      return `Total (${rangeFrom} → ${rangeTo})`;
+    }
+    return "Total en el rango";
+  }, [dateMode, specificDate, rangeFrom, rangeTo]);
+
   const loadPayments = useCallback(async () => {
     setLoading(true);
     try {
+      const today = todayOnDateLocal();
+      const datePart = buildDateQuery(
+        dateMode,
+        today,
+        specificDate,
+        rangeFrom,
+        rangeTo
+      );
+
       const result = await getPayments({
         page,
         page_size: pageSize,
         sort,
-        on_date: onDate,
         drogueria_id: drogueriaId,
+        ...datePart,
       });
 
       if (!result.ok) {
@@ -96,7 +145,10 @@ export default function DashboardPaymentsSection() {
     page,
     pageSize,
     sort,
-    onDate,
+    dateMode,
+    specificDate,
+    rangeFrom,
+    rangeTo,
     drogueriaId,
     router,
     toast,
@@ -134,6 +186,19 @@ export default function DashboardPaymentsSection() {
       ws.close();
     };
   }, []);
+
+  const handleDateModeChange = (mode: PaymentDateMode) => {
+    setDateMode(mode);
+    setPage(1);
+    const t = todayOnDateLocal();
+    if (mode === "especifica") {
+      setSpecificDate(t);
+    }
+    if (mode === "rango") {
+      setRangeFrom(t);
+      setRangeTo(t);
+    }
+  };
 
   const handleDrogueriaChange = (id: number) => {
     setDrogueriaId(id);
@@ -198,22 +263,42 @@ export default function DashboardPaymentsSection() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[60vh] w-full max-w-5xl flex-col items-center justify-center gap-8 px-2 sm:gap-10">
-      <div className="w-full max-w-4xl">
+    <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-start px-2 pb-10 pt-4 sm:pt-6">
+      {/* Badges arriba fijos: sin justify-center para que no “salten” con la altura del contenido */}
+      <div className="w-full max-w-4xl shrink-0">
         <StoreBadges
           drogueriaId={drogueriaId}
           onDrogueriaChange={handleDrogueriaChange}
         />
       </div>
 
-      {/* Fecha y tabla un poco más abajo, separados de los badges */}
-      <div className="flex w-full max-w-4xl flex-col gap-3 pt-2 sm:pt-4">
-        <div className="flex w-full items-center justify-start gap-3 rounded-2xl">
-          <div
-            className="text-sm font-semibold"
-            style={{ color: "var(--primary-800)" }}
-          >
-            Fecha: {onDate}
+      {/* Más aire bajo badges: fecha/tablas más abajo */}
+      <div className="h-8 w-full sm:h-12" aria-hidden />
+
+      <div className="flex w-full max-w-4xl flex-col gap-2 sm:gap-3">
+        {/* Altura mínima fija: modo fecha específica vs rango no mueve el bloque de abajo */}
+        <div className="flex min-h-[11.5rem] w-full flex-col gap-4 sm:min-h-[7.5rem] sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-h-[6.5rem] min-w-0 flex-1 flex-col justify-start sm:min-h-[5.5rem]">
+            <DateFilterControls
+              mode={dateMode}
+              onModeChange={handleDateModeChange}
+              specificDate={specificDate}
+              onSpecificDateChange={(v) => {
+                setSpecificDate(v);
+                setPage(1);
+              }}
+              rangeFrom={rangeFrom}
+              rangeTo={rangeTo}
+              onRangeFromChange={(v) => {
+                setRangeFrom(v);
+                setPage(1);
+              }}
+              onRangeToChange={(v) => {
+                setRangeTo(v);
+                setPage(1);
+              }}
+              disabled={loading}
+            />
           </div>
 
           <button
@@ -221,7 +306,7 @@ export default function DashboardPaymentsSection() {
             aria-label="Sincronizar pagos desde correo"
             disabled={polling || loading}
             onClick={() => void handlePollNow()}
-            className="flex h-10 items-center justify-center rounded-xl px-3 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex h-10 shrink-0 items-center justify-center self-start rounded-xl px-3 disabled:cursor-not-allowed disabled:opacity-60"
             style={{ backgroundColor: "var(--primary-600)", color: "white" }}
             title="POST /payments/poll-now"
           >
@@ -263,6 +348,7 @@ export default function DashboardPaymentsSection() {
           onPageChange={setPage}
           onPageSizeChange={handlePageSizeChange}
           loading={loading}
+          totalLabel={totalLabel}
         />
       </div>
     </div>
