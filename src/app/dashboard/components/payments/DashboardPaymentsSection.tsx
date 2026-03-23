@@ -136,6 +136,12 @@ export default function DashboardPaymentsSection() {
       if (page > effectivePages) {
         setPage(effectivePages);
       }
+    } catch {
+      // fetch() rechaza ante red/offline; no borramos la tabla por si ya había datos cargados.
+      toast.show(
+        "No se pudo actualizar la lista. Revisa la conexión o vuelve a intentar.",
+        "error"
+      );
     } finally {
       setLoading(false);
     }

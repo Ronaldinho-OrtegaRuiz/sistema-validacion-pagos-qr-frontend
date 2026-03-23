@@ -1,4 +1,8 @@
-import { fetchWithAuth, getApiBaseUrl } from "@/lib/api";
+import {
+  fetchWithAuth,
+  getApiBaseUrl,
+  getApiUpstreamBaseUrl,
+} from "@/lib/api";
 
 /** Coincide con PaymentListResponse del backend. */
 export type PaymentItem = {
@@ -104,7 +108,7 @@ export async function postPollNow(): Promise<
 
 /** WebSocket: el navegador no manda cabeceras custom fácil; usamos ?token= */
 export function getPaymentsWebSocketUrl(token: string): string {
-  const base = getApiBaseUrl();
+  const base = getApiUpstreamBaseUrl();
   let hostPath: string;
   try {
     const u = new URL(base);
@@ -123,4 +127,62 @@ export function detailFromBody(body: unknown): string | null {
   const d = (body as { detail?: unknown }).detail;
   if (typeof d === "string") return d;
   return null;
+}
+
+/** Fila de GET /payments/by-month (solo date + value, strings). */
+export type PaymentByMonthRow = {
+  date: string;
+  value: string;
+};
+
+export type PaymentsByMonthParams = {
+  month: number;
+  /** Si no se envía, el backend usa el año actual en PAYMENTS_TZ. */
+  year?: number;
+  drogueria_id?: number;
+};
+
+function buildByMonthQuery(params: PaymentsByMonthParams): string {
+  const sp = new URLSearchParams();
+  sp.set("month", String(params.month));
+  if (params.year != null) sp.set("year", String(params.year));
+  if (params.drogueria_id != null)
+    sp.set("drogueria_id", String(params.drogueria_id));
+  return `?${sp.toString()}`;
+}
+
+/** GET /payments/by-month — mismo patrón que getPayments (fetchWithAuth + URL base). */
+export async function getPaymentsByMonth(
+  params: PaymentsByMonthParams
+): Promise<
+  | { ok: true; data: PaymentByMonthRow[] }
+  | { ok: false; status: number; body: unknown }
+> {
+  const url = `${getApiBaseUrl()}/payments/by-month${buildByMonthQuery(params)}`;
+  const res = await fetchWithAuth(url, { method: "GET" });
+  let body: unknown = [];
+  try {
+    body = await res.json();
+  } catch {
+    body = [];
+  }
+  if (!res.ok) {
+    return { ok: false, status: res.status, body };
+  }
+  const arr = Array.isArray(body) ? body : [];
+  const data: PaymentByMonthRow[] = arr
+    .filter(
+      (row): row is PaymentByMonthRow =>
+        row != null &&
+        typeof row === "object" &&
+        "date" in row &&
+        "value" in row &&
+        typeof (row as PaymentByMonthRow).date === "string" &&
+        typeof (row as PaymentByMonthRow).value === "string"
+    )
+    .map((row) => ({
+      date: (row as PaymentByMonthRow).date,
+      value: (row as PaymentByMonthRow).value,
+    }));
+  return { ok: true, data };
 }

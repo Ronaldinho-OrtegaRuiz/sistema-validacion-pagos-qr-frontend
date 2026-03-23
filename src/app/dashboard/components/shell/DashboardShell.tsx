@@ -12,7 +12,7 @@ export default function DashboardShell({
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-[color:var(--primary-50)] via-white to-white"
+      className="flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden bg-gradient-to-b from-[color:var(--primary-50)] via-white to-white"
       style={{ overflowX: "hidden" }}
     >
       {/* Botón hamburger (solo móvil) */}
@@ -61,11 +61,11 @@ export default function DashboardShell({
         </svg>
       </button>
 
-      <div className="flex min-h-screen">
+      <div className="flex min-h-0 flex-1">
         {/* Sidebar (desktop siempre visible, móvil controlado por estado) */}
         <div
           className={[
-            "fixed left-0 top-0 z-40 h-screen w-64 transform transition-transform duration-200 lg:static lg:translate-x-0",
+            "fixed left-0 top-0 z-40 h-dvh max-h-dvh w-64 transform transition-transform duration-200 lg:static lg:translate-x-0",
             open ? "translate-x-0" : "-translate-x-full",
           ].join(" ")}
         >
@@ -82,7 +82,7 @@ export default function DashboardShell({
           />
         ) : null}
 
-        <main className="flex-1 p-6 pt-16 lg:p-6 lg:pl-10 lg:pt-6">
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain p-6 pt-16 lg:p-6 lg:pl-10 lg:pt-6">
           {children}
         </main>
       </div>

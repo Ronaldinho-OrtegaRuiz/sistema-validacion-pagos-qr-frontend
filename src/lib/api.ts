@@ -3,10 +3,20 @@ import { getToken } from "@/lib/auth-storage";
 const DEFAULT_API =
   "https://sistema-validacion-pagos-qr-production.up.railway.app";
 
+/** Host real del API (Railway). Para WebSocket y para el rewrite en next.config. */
+export function getApiUpstreamBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? DEFAULT_API;
+}
+
+/**
+ * En el navegador: `/api/backend` (Next reenvía al upstream → sin CORS desde localhost).
+ * En servidor: URL directa al API.
+ */
 export function getApiBaseUrl(): string {
-  const base =
-    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? DEFAULT_API;
-  return base;
+  if (typeof window !== "undefined") {
+    return "/api/backend";
+  }
+  return getApiUpstreamBaseUrl();
 }
 
 export type LoginSuccess = { token: string };
