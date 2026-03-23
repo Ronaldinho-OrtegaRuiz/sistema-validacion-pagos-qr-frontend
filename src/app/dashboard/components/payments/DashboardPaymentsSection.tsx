@@ -217,6 +217,9 @@ export default function DashboardPaymentsSection() {
 
   const handlePollNow = async () => {
     setPolling(true);
+    const dismissLoading = toast.show("Sincronizando correo…", "loading", {
+      persistent: true,
+    });
     try {
       const r = await postPollNow();
       if (!r.ok) {
@@ -257,7 +260,10 @@ export default function DashboardPaymentsSection() {
       }
 
       await loadPayments();
+    } catch {
+      toast.show("Error de red al sincronizar. Intenta de nuevo.", "error");
     } finally {
+      dismissLoading();
       setPolling(false);
     }
   };

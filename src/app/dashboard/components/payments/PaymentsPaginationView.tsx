@@ -55,7 +55,7 @@ export default function PaymentsPaginationView({
             value={pageSize}
             disabled={loading}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="min-w-[4.5rem] cursor-pointer rounded-xl border-2 px-3 py-2 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--primary-400)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-[4rem] shrink-0 cursor-pointer rounded-xl border-2 py-2 pl-2.5 pr-1 text-sm font-semibold tabular-nums outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--primary-400)] disabled:cursor-not-allowed disabled:opacity-60"
             style={{
               borderColor: "var(--primary-400)",
               backgroundColor: "color-mix(in srgb, var(--primary-600) 10%, white)",
