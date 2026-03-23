@@ -1,14 +1,20 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+"use client";
 
-export const metadata = {
-  title: "Logout",
-};
+import { removeToken } from "@/lib/auth-storage";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-export default async function LogoutPage() {
-  const cookieStore = await cookies();
-  cookieStore.set("auth_user", "", { path: "/", expires: new Date(0) });
+export default function LogoutPage() {
+  const router = useRouter();
 
-  redirect("/login");
+  useEffect(() => {
+    removeToken();
+    router.replace("/login");
+  }, [router]);
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 text-sm text-zinc-600">
+      Cerrando sesión…
+    </div>
+  );
 }
-

@@ -1,19 +1,19 @@
 "use client";
 
+import { useToast } from "@/components/ToastProvider";
+import {
+  LoginRequestError,
+  loginErrorMessage,
+  postLogin,
+} from "@/lib/api";
+import { getToken, setToken } from "@/lib/auth-storage";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-function setCookie(name: string, value: string, maxAgeSeconds: number) {
-  // Nota: para esta base inicial el "auth" es mock (solo UI).
-  // Cookie con acceso desde server components (server lee cookies no-httpOnly).
-  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(
-    value
-  )}; Path=/; Max-Age=${maxAgeSeconds}`;
-}
-
 export default function LoginCard() {
   const router = useRouter();
+  const toast = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +79,12 @@ export default function LoginCard() {
     return () => window.clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    if (getToken()) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
+
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -91,15 +97,20 @@ export default function LoginCard() {
 
     setSubmitting(true);
     try {
-      // Simulamos llamada a backend.
-      await new Promise((r) => setTimeout(r, 500));
-
-      // Mock: si quieres validación real, luego conectamos API.
-      setCookie("auth_user", u, 60 * 60 * 24 * 7);
-
+      const { token } = await postLogin(u, password);
+      setToken(token);
+      toast.show("Inicio de sesión exitoso", "success");
       router.push("/dashboard");
-    } catch {
-      setError("No se pudo iniciar sesión. Intenta nuevamente.");
+    } catch (err) {
+      if (err instanceof LoginRequestError) {
+        const msg = loginErrorMessage(err.status, err.body);
+        setError(msg);
+        toast.show(msg, "error");
+      } else {
+        const msg = "No se pudo iniciar sesión. Intenta nuevamente.";
+        setError(msg);
+        toast.show(msg, "error");
+      }
     } finally {
       setSubmitting(false);
     }
