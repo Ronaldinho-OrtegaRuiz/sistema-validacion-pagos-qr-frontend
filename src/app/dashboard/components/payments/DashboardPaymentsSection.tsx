@@ -6,7 +6,6 @@ import {
   detailFromBody,
   getPayments,
   getPaymentsWebSocketUrl,
-  postPollNow,
   type PaymentItem,
   type PaymentsQueryParams,
 } from "@/lib/payments";
@@ -76,7 +75,6 @@ export default function DashboardPaymentsSection() {
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [polling, setPolling] = useState(false);
 
   const loadRef = useRef<() => Promise<void>>(undefined);
 
@@ -215,57 +213,9 @@ export default function DashboardPaymentsSection() {
     setPage(1);
   };
 
-  const handlePollNow = async () => {
-    setPolling(true);
-    const dismissLoading = toast.show("Sincronizando correo…", "loading", {
-      persistent: true,
-    });
-    try {
-      const r = await postPollNow();
-      if (!r.ok) {
-        if (r.status === 401) {
-          removeToken();
-          toast.show("Sesión expirada. Inicia sesión de nuevo.", "error");
-          router.replace("/login");
-          return;
-        }
-        toast.show(
-          errorMessage(r.body, "No se pudo sincronizar correos."),
-          "error"
-        );
-        return;
-      }
-
-      const d = r.data;
-      if (d.ok === false) {
-        toast.show(
-          typeof d.message === "string" && d.message.trim()
-            ? d.message
-            : "No se pudo ejecutar la sincronización.",
-          "error"
-        );
-        return;
-      }
-
-      const nc = d.new_count ?? 0;
-      if (d.bootstrapped) {
-        toast.show(
-          d.message ?? "Puntero de correo inicializado (sin histórico).",
-          "info"
-        );
-      } else if (nc > 0) {
-        toast.show(`Sincronización: ${nc} pago(s) nuevo(s).`, "success");
-      } else {
-        toast.show(d.message ?? "Sincronización completada.", "info");
-      }
-
-      await loadPayments();
-    } catch {
-      toast.show("Error de red al sincronizar. Intenta de nuevo.", "error");
-    } finally {
-      dismissLoading();
-      setPolling(false);
-    }
+  /** Vuelve a pedir GET /payments (el servidor ya puede haber insertado vía monitor; el WS avisa de nuevos). */
+  const handleRefreshPayments = () => {
+    void loadRef.current?.();
   };
 
   return (
@@ -309,32 +259,28 @@ export default function DashboardPaymentsSection() {
 
           <button
             type="button"
-            aria-label="Sincronizar pagos desde correo"
-            disabled={polling || loading}
-            onClick={() => void handlePollNow()}
+            aria-label="Actualizar lista de pagos"
+            disabled={loading}
+            onClick={handleRefreshPayments}
             className="flex h-10 shrink-0 items-center justify-center self-start rounded-xl px-3 disabled:cursor-not-allowed disabled:opacity-60"
             style={{ backgroundColor: "var(--primary-600)", color: "white" }}
-            title="POST /payments/poll-now"
+            title="Volver a cargar los pagos (GET /payments)"
           >
-            {polling ? (
-              <span className="text-xs font-semibold">…</span>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                focusable="false"
-                viewBox="0 0 12 12"
-                aria-hidden="true"
-              >
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  d="M10 4c-.8-1.1-2-2.5-4.1-2.5-2.5 0-4.4 2-4.4 4.5s2 4.5 4.4 4.5c1.3 0 2.5-.6 3.3-1.5m1.3-7.5V4c0 .3-.2.5-.5.5H7.5"
-                />
-              </svg>
-            )}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              focusable="false"
+              viewBox="0 0 12 12"
+              aria-hidden="true"
+            >
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                d="M10 4c-.8-1.1-2-2.5-4.1-2.5-2.5 0-4.4 2-4.4 4.5s2 4.5 4.4 4.5c1.3 0 2.5-.6 3.3-1.5m1.3-7.5V4c0 .3-.2.5-.5.5H7.5"
+              />
+            </svg>
           </button>
         </div>
 
