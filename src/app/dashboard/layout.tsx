@@ -1,5 +1,5 @@
-import AuthGuard from "./AuthGuard";
-import DashboardShell from "./DashboardShell";
+import AuthGuard from "./components/auth/AuthGuard";
+import DashboardShell from "./components/shell/DashboardShell";
 
 export default function DashboardLayout({
   children,

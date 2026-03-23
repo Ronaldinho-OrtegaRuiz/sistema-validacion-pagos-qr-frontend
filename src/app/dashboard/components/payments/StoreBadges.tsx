@@ -1,22 +1,32 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+
+/** IDs alineados con el backend: Ricky = 1, Yessi = 2 */
+export const DROGUERIA_RICKY_ID = 1;
+export const DROGUERIA_YESSI_ID = 2;
 
 type Store = {
-  id: string;
+  id: number;
   label: string;
 };
 
-export default function StoreBadges() {
+type Props = {
+  drogueriaId: number;
+  onDrogueriaChange: (id: number) => void;
+};
+
+export default function StoreBadges({
+  drogueriaId,
+  onDrogueriaChange,
+}: Props) {
   const stores: Store[] = useMemo(
     () => [
-      { id: "ricky", label: "Drogueria Ricky" },
-      { id: "yessi", label: "Drogueria Yessi 24H" },
+      { id: DROGUERIA_RICKY_ID, label: "Drogueria Ricky" },
+      { id: DROGUERIA_YESSI_ID, label: "Drogueria Yessi 24H" },
     ],
     []
   );
-
-  const [selectedId, setSelectedId] = useState(stores[0]?.id ?? "ricky");
 
   return (
     <div
@@ -28,7 +38,7 @@ export default function StoreBadges() {
       }}
     >
       {stores.map((s, idx) => {
-        const selected = s.id === selectedId;
+        const selected = s.id === drogueriaId;
         return (
           <div
             key={s.id}
@@ -41,7 +51,7 @@ export default function StoreBadges() {
           >
             <button
               type="button"
-              onClick={() => setSelectedId(s.id)}
+              onClick={() => onDrogueriaChange(s.id)}
               className="w-full px-4 py-2 text-sm font-semibold transition-colors outline-none focus:outline-none"
               style={{
                 backgroundColor: selected
@@ -62,4 +72,3 @@ export default function StoreBadges() {
     </div>
   );
 }
-

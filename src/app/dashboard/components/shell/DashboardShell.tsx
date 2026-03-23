@@ -59,7 +59,6 @@ export default function DashboardShell({
             strokeLinecap="round"
           />
         </svg>
-
       </button>
 
       <div className="flex min-h-screen">
@@ -90,4 +89,3 @@ export default function DashboardShell({
     </div>
   );
 }
-

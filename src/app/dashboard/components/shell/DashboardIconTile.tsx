@@ -70,4 +70,3 @@ export default function DashboardIconTile({ children }: Props) {
     </div>
   );
 }
-
