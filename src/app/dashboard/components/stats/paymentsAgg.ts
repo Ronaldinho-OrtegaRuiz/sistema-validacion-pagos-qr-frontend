@@ -1,10 +1,62 @@
 import type { PaymentByMonthRow } from "@/lib/payments";
 
-/** YYYY-MM-DD desde ISO (primeros 10 chars si vienen en ese formato). */
+/**
+ * Zona para agrupar pagos por “día calendario” igual que el backend con PAYMENTS_TZ / `on_date`.
+ * Ajusta con NEXT_PUBLIC_PAYMENTS_TZ si tu API usa otra zona.
+ */
+export const PAYMENTS_STATS_TIMEZONE =
+  (typeof process !== "undefined" &&
+    typeof process.env.NEXT_PUBLIC_PAYMENTS_TZ === "string" &&
+    process.env.NEXT_PUBLIC_PAYMENTS_TZ.trim()) ||
+  "America/Bogota";
+
+/** YYYY-MM-DD desde ISO (primeros 10 chars) — día UTC; puede no coincidir con `on_date` local. */
 export function dayKeyFromIso(iso: string): string | null {
   const m = iso.trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (!m) return null;
   return `${m[1]}-${m[2]}-${m[3]}`;
+}
+
+/** YYYY-MM-DD del instante en la zona indicada (alineado con filtros por día del servidor). */
+export function calendarDayKeyFromIso(
+  iso: string,
+  timeZone: string = PAYMENTS_STATS_TIMEZONE
+): string | null {
+  const d = new Date(iso.trim());
+  if (Number.isNaN(d.getTime())) return null;
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(d);
+    const y = parts.find((p) => p.type === "year")?.value;
+    const mo = parts.find((p) => p.type === "month")?.value;
+    const day = parts.find((p) => p.type === "day")?.value;
+    if (!y || !mo || !day) return null;
+    return `${y}-${mo}-${day}`;
+  } catch {
+    return null;
+  }
+}
+
+/** Año calendario actual en la misma zona (para pedir el mes correcto al API). */
+export function calendarYearInTimeZone(
+  instant: Date = new Date(),
+  timeZone: string = PAYMENTS_STATS_TIMEZONE
+): number {
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+    }).formatToParts(instant);
+    const y = parts.find((p) => p.type === "year")?.value;
+    const n = y ? parseInt(y, 10) : instant.getFullYear();
+    return Number.isFinite(n) ? n : instant.getFullYear();
+  } catch {
+    return instant.getFullYear();
+  }
 }
 
 export function parsePaymentValue(s: string): number {
@@ -33,12 +85,14 @@ export type MonthAggregate = {
 };
 
 /**
- * Agrupa filas del mes calendario (year/month). Solo cuenta filas cuya fecha cae en ese mes.
+ * Agrupa filas del mes calendario (year/month) usando el día local en PAYMENTS_STATS_TIMEZONE,
+ * no el prefijo UTC del ISO (evita 5 vs 9 pagos “hoy” vs gráfica).
  */
 export function aggregateMonth(
   rows: PaymentByMonthRow[],
   year: number,
-  month: number
+  month: number,
+  timeZone: string = PAYMENTS_STATS_TIMEZONE
 ): MonthAggregate {
   const dim = daysInMonth(year, month);
   const y = String(year);
@@ -53,7 +107,7 @@ export function aggregateMonth(
   const sums = Array.from({ length: dim }, () => 0);
 
   for (const row of rows) {
-    const key = dayKeyFromIso(row.date);
+    const key = calendarDayKeyFromIso(row.date, timeZone);
     if (!key || !validDays.has(key)) continue;
     const day = Number.parseInt(key.slice(8, 10), 10);
     if (day < 1 || day > dim) continue;
@@ -102,10 +156,11 @@ export const DEFAULT_STATS_YEAR_FALLBACK = 2026;
 
 export function inferYearFromRows(
   rows: PaymentByMonthRow[],
-  fallback: number = DEFAULT_STATS_YEAR_FALLBACK
+  fallback: number = DEFAULT_STATS_YEAR_FALLBACK,
+  timeZone: string = PAYMENTS_STATS_TIMEZONE
 ): number {
   for (const row of rows) {
-    const key = dayKeyFromIso(row.date);
+    const key = calendarDayKeyFromIso(row.date, timeZone);
     if (!key) continue;
     const y = Number.parseInt(key.slice(0, 4), 10);
     if (Number.isFinite(y) && y >= 2000 && y <= 2100) return y;

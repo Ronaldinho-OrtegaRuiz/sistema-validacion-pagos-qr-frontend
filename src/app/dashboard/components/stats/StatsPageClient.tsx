@@ -6,7 +6,11 @@ import { detailFromBody, getPaymentsByMonth } from "@/lib/payments";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import StoreBadges, { DROGUERIA_RICKY_ID } from "../payments/StoreBadges";
-import { aggregateMonth, inferYearFromRows } from "./paymentsAgg";
+import {
+  aggregateMonth,
+  calendarYearInTimeZone,
+  PAYMENTS_STATS_TIMEZONE,
+} from "./paymentsAgg";
 import { PaymentsLineChart, ValueBarChart } from "./StatsCharts";
 
 const MONTH_NAMES_ES = [
@@ -57,9 +61,14 @@ export default function StatsPageClient() {
     setLoading(true);
     setError(null);
     try {
-      // Igual que el resto: solo month + drogueria_id; sin year (año por PAYMENTS_TZ en el servidor).
+      // Año explícito + misma TZ que la agregación → mismo “día” que inicio (`on_date`).
+      const year = calendarYearInTimeZone(
+        new Date(),
+        PAYMENTS_STATS_TIMEZONE
+      );
       const res = await getPaymentsByMonth({
         month,
+        year,
         drogueria_id: drogueriaId,
       });
       if (!res.ok) {
@@ -78,7 +87,6 @@ export default function StatsPageClient() {
         setSeries(null);
         return;
       }
-      const year = inferYearFromRows(res.data);
       setSeries(aggregateMonth(res.data, year, month));
     } catch {
       setError("Error de red al cargar estadísticas.");
@@ -95,7 +103,9 @@ export default function StatsPageClient() {
   const monthTitle = MONTH_NAMES_ES[month - 1] ?? `Mes ${month}`;
 
   const formatDayLabel = (day: number) => {
-    const y = series?.year ?? inferYearFromRows([]);
+    const y =
+      series?.year ??
+      calendarYearInTimeZone(new Date(), PAYMENTS_STATS_TIMEZONE);
     return `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${y}`;
   };
 
@@ -198,8 +208,24 @@ export default function StatsPageClient() {
                 </span>
               </div>
             </div>
-            <p className="mt-2 text-xs text-zinc-600">
-              Pasa el mouse por un punto: cantidad de pagos con QR ese día.
+            <p
+              className="mt-2 text-xs"
+              style={{ color: "var(--primary-700)" }}
+            >
+              Pasa el mouse por un punto: cantidad de pagos con QR ese día. Cada
+              barra/punto usa el día en{" "}
+              <strong>America/Bogota</strong> (como el filtro de inicio); si el
+              API usa otra zona, configura la variable{" "}
+              <code
+                className="rounded px-1 font-mono text-[11px]"
+                style={{
+                  backgroundColor: "color-mix(in srgb, var(--primary-600) 12%, var(--background))",
+                  color: "var(--foreground)",
+                }}
+              >
+                NEXT_PUBLIC_PAYMENTS_TZ
+              </code>
+              .
             </p>
             <div
               className="mt-4 rounded-xl border bg-white p-3"
