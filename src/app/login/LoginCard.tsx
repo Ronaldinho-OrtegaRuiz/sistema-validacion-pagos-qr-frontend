@@ -117,13 +117,18 @@ export default function LoginCard() {
     }
   }
 
+  const inputClass =
+    "h-11 w-full rounded-xl border px-3 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--primary-400)] disabled:cursor-not-allowed disabled:opacity-60";
+
   return (
     <div
-      className="w-full max-w-sm rounded-2xl border bg-white p-6"
+      className="w-full max-w-sm rounded-2xl border p-6"
       style={{
-        borderColor: "var(--primary-100)",
+        borderColor: "var(--primary-200)",
+        backgroundColor:
+          "color-mix(in srgb, var(--primary-600) 10%, var(--background))",
         boxShadow:
-          "0 18px 50px -25px color-mix(in srgb, var(--primary-600) 35%, transparent)",
+          "0 18px 50px -25px color-mix(in srgb, var(--primary-600) 40%, transparent)",
       }}
     >
       <div className="flex items-center gap-3">
@@ -144,11 +149,17 @@ export default function LoginCard() {
             />
           </svg>
         </span>
-        <h1 className="text-xl font-semibold text-zinc-950">
-        Iniciar sesión
+        <h1
+          className="text-xl font-semibold"
+          style={{ color: "var(--foreground)" }}
+        >
+          Iniciar sesión
         </h1>
       </div>
-      <p className="mt-2 text-sm text-zinc-600">
+      <p
+        className="mt-2 text-sm font-medium"
+        style={{ color: "var(--primary-700)" }}
+      >
         Accede a tu cuenta con tu usuario y contraseña.
       </p>
 
@@ -156,7 +167,8 @@ export default function LoginCard() {
         <div className="space-y-2">
           <label
             htmlFor="username"
-            className="text-sm font-medium text-zinc-900"
+            className="text-sm font-semibold"
+            style={{ color: "var(--primary-800)" }}
           >
             Usuario
           </label>
@@ -166,9 +178,12 @@ export default function LoginCard() {
             autoComplete="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="h-11 w-full rounded-xl border bg-white px-3 text-sm text-zinc-950 outline-none transition-colors"
+            className={inputClass}
             style={{
-              borderColor: "var(--primary-400, var(--primary-200))",
+              borderColor: "var(--primary-400)",
+              backgroundColor:
+                "color-mix(in srgb, var(--primary-600) 12%, var(--background))",
+              color: "var(--foreground)",
             }}
             placeholder="tu.usuario"
             disabled={submitting}
@@ -178,7 +193,8 @@ export default function LoginCard() {
         <div className="space-y-2">
           <label
             htmlFor="password"
-            className="text-sm font-medium text-zinc-900"
+            className="text-sm font-semibold"
+            style={{ color: "var(--primary-800)" }}
           >
             Contraseña
           </label>
@@ -189,16 +205,28 @@ export default function LoginCard() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="h-11 w-full rounded-xl border bg-white px-3 text-sm text-zinc-950 outline-none transition-colors"
+            className={inputClass}
             style={{
-              borderColor: "var(--primary-400, var(--primary-200))",
+              borderColor: "var(--primary-400)",
+              backgroundColor:
+                "color-mix(in srgb, var(--primary-600) 12%, var(--background))",
+              color: "var(--foreground)",
             }}
             disabled={submitting}
           />
         </div>
 
         {error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <div
+            className="rounded-xl border p-3 text-sm font-medium"
+            style={{
+              borderColor:
+                "color-mix(in srgb, #f87171 45%, var(--primary-200))",
+              backgroundColor:
+                "color-mix(in srgb, #ef4444 14%, var(--background))",
+              color: "var(--foreground)",
+            }}
+          >
             {error}
           </div>
         ) : null}
