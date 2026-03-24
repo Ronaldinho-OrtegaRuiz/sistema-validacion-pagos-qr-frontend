@@ -6,7 +6,7 @@ import {
   loginErrorMessage,
   postLogin,
 } from "@/lib/api";
-import { getToken, setToken } from "@/lib/auth-storage";
+import { getToken, setAuthUsername, setToken } from "@/lib/auth-storage";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -99,6 +99,7 @@ export default function LoginCard() {
     try {
       const { token } = await postLogin(u, password);
       setToken(token);
+      setAuthUsername(u);
       toast.show("Inicio de sesión exitoso", "success");
       router.push("/dashboard");
     } catch (err) {

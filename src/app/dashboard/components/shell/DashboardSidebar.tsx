@@ -1,7 +1,10 @@
 "use client";
 
+import { getAuthUsername } from "@/lib/auth-storage";
+import { canAccessStats } from "@/lib/stats-access";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import SidebarAppearanceControls from "./SidebarAppearanceControls";
 
 function IconBag() {
@@ -64,11 +67,24 @@ export default function DashboardSidebar({
   onRequestClose?: () => void;
 }) {
   const pathname = usePathname();
+  /** `undefined` = aún no leímos localStorage (misma UI en 1er render → sin mismatch de hidratación). */
+  const [username, setUsername] = useState<string | null | undefined>(undefined);
 
-  const items: NavItem[] = [
-    { href: "/dashboard", label: "Inicio", icon: <IconBag /> },
-    { href: "/dashboard/stats", label: "Estadísticas", icon: <IconStats /> },
-  ];
+  useEffect(() => {
+    setUsername(getAuthUsername());
+  }, []);
+
+  const items: NavItem[] = useMemo(() => {
+    const all: NavItem[] = [
+      { href: "/dashboard", label: "Inicio", icon: <IconBag /> },
+      { href: "/dashboard/stats", label: "Estadísticas", icon: <IconStats /> },
+    ];
+    if (username === undefined) return all;
+    if (!canAccessStats(username)) {
+      return all.filter((it) => it.href !== "/dashboard/stats");
+    }
+    return all;
+  }, [username]);
 
   const isSelected = (href: string) => {
     if (href === "/dashboard") return pathname === "/" || pathname === href;

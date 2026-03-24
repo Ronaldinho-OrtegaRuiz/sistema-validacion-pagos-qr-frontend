@@ -1,3 +1,4 @@
+import StatsAccessGate from "../components/stats/StatsAccessGate";
 import StatsPageClient from "../components/stats/StatsPageClient";
 
 export const metadata = {
@@ -7,7 +8,9 @@ export const metadata = {
 export default function StatsPage() {
   return (
     <section aria-label="Contenido estadísticas">
-      <StatsPageClient />
+      <StatsAccessGate>
+        <StatsPageClient />
+      </StatsAccessGate>
     </section>
   );
 }
