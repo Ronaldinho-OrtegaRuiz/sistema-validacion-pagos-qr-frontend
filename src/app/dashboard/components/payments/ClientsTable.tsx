@@ -87,7 +87,11 @@ export default function ClientsTable({
                 #
               </th>
               <th style={{ ...thStyle, ...thSticky }}>CLIENTE</th>
-              <th style={{ ...thStyle, ...thSticky }}>
+              <th style={{ ...thStyle, ...thSticky }}>VALOR</th>
+              <th
+                style={{ ...thStyle, ...thSticky }}
+                aria-sort={sort === "asc" ? "ascending" : "descending"}
+              >
                 <button
                   type="button"
                   onClick={toggleSort}
@@ -97,9 +101,9 @@ export default function ClientsTable({
                     color: "inherit",
                     cursor: loading ? "wait" : "pointer",
                   }}
-                  title="Orden por fecha (asc / desc)"
+                  title="Orden por hora (más reciente / más antiguo)"
                 >
-                  <span>VALOR</span>
+                  <span>HORA</span>
                   <span
                     className="inline-flex flex-col leading-none"
                     style={{ color: "var(--primary-700)" }}
@@ -125,7 +129,6 @@ export default function ClientsTable({
                   </span>
                 </button>
               </th>
-              <th style={{ ...thStyle, ...thSticky }}>HORA</th>
             </tr>
           </thead>
           <tbody>
