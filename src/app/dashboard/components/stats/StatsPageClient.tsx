@@ -87,7 +87,15 @@ export default function StatsPageClient() {
         setSeries(null);
         return;
       }
-      setSeries(aggregateMonth(res.data, year, month));
+      setSeries(
+        aggregateMonth(
+          res.data,
+          year,
+          month,
+          PAYMENTS_STATS_TIMEZONE,
+          new Date()
+        )
+      );
     } catch {
       setError("Error de red al cargar estadísticas.");
       setSeries(null);
@@ -202,7 +210,10 @@ export default function StatsPageClient() {
                   color: "var(--primary-800)",
                 }}
               >
-                Promedio pagos / día ({series.dim} días):{" "}
+                Promedio pagos / día (
+                {series.avgDivisorDays}{" "}
+                {series.avgDivisorDays === 1 ? "día del mes" : "días del mes"}
+                ):{" "}
                 <span style={{ color: "var(--primary-600)" }}>
                   {dec2(series.avgPaymentsPerCalendarDay)}
                 </span>
@@ -292,6 +303,22 @@ export default function StatsPageClient() {
                   color: "var(--primary-800)",
                 }}
               >
+                Promedio valor / día (
+                {series.avgDivisorDays}{" "}
+                {series.avgDivisorDays === 1 ? "día del mes" : "días del mes"}
+                ):{" "}
+                <span style={{ color: "var(--primary-600)" }}>
+                  {moneyEs(series.avgValuePerCalendarDay)}
+                </span>
+              </div>
+              <div
+                className="rounded-xl border px-3 py-2 font-semibold"
+                style={{
+                  borderColor: "var(--primary-200)",
+                  backgroundColor: "white",
+                  color: "var(--primary-800)",
+                }}
+              >
                 Promedio valor / pago QR:{" "}
                 <span style={{ color: "var(--primary-600)" }}>
                   {series.totalPayments > 0
@@ -300,7 +327,10 @@ export default function StatsPageClient() {
                 </span>
               </div>
             </div>
-            <p className="mt-2 text-xs text-zinc-600">
+            <p
+              className="mt-2 text-xs"
+              style={{ color: "var(--primary-700)" }}
+            >
               Pasa el mouse sobre una barra: total del día.
             </p>
             <div

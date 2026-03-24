@@ -59,12 +59,74 @@ export function calendarYearInTimeZone(
   }
 }
 
+/** Mes calendario 1–12 en la zona indicada. */
+export function calendarMonthInTimeZone(
+  instant: Date = new Date(),
+  timeZone: string = PAYMENTS_STATS_TIMEZONE
+): number {
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      month: "numeric",
+    }).formatToParts(instant);
+    const m = parts.find((p) => p.type === "month")?.value;
+    const n = m ? parseInt(m, 10) : instant.getMonth() + 1;
+    return Number.isFinite(n) && n >= 1 && n <= 12
+      ? n
+      : instant.getMonth() + 1;
+  } catch {
+    return instant.getMonth() + 1;
+  }
+}
+
+/** Día del mes 1–31 en la zona indicada. */
+export function calendarDayOfMonthInTimeZone(
+  instant: Date = new Date(),
+  timeZone: string = PAYMENTS_STATS_TIMEZONE
+): number {
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      day: "numeric",
+    }).formatToParts(instant);
+    const d = parts.find((p) => p.type === "day")?.value;
+    const n = d ? parseInt(d, 10) : instant.getDate();
+    return Number.isFinite(n) && n >= 1 && n <= 31
+      ? n
+      : instant.getDate();
+  } catch {
+    return instant.getDate();
+  }
+}
+
+/**
+ * Días con los que se calculan los promedios “por día”:
+ * - Mes en curso (misma zona): día de hoy (1…hoy), sin saltar días sin ventas.
+ * - Otro mes: largo completo del mes (28/29/30/31).
+ */
+export function averageDivisorDays(
+  year: number,
+  month: number,
+  dim: number,
+  asOf: Date,
+  timeZone: string = PAYMENTS_STATS_TIMEZONE
+): number {
+  const cy = calendarYearInTimeZone(asOf, timeZone);
+  const cm = calendarMonthInTimeZone(asOf, timeZone);
+  if (year !== cy || month !== cm) {
+    return Math.max(1, dim);
+  }
+  const dom = calendarDayOfMonthInTimeZone(asOf, timeZone);
+  return Math.min(Math.max(1, dom), Math.max(1, dim));
+}
+
 export function parsePaymentValue(s: string): number {
   const t = s.trim().replace(",", ".");
   const n = Number.parseFloat(t);
   return Number.isFinite(n) ? n : 0;
 }
 
+/** Mes 1–12 (enero=1). Devuelve 28, 29, 30 o 31 según mes y año bisiesto. */
 export function daysInMonth(year: number, month: number): number {
   return new Date(year, month, 0).getDate();
 }
@@ -78,7 +140,11 @@ export type MonthAggregate = {
   sums: number[];
   totalPayments: number;
   totalValue: number;
+  /** Denominador de los promedios por día (mes completo o 1–hoy si es el mes en curso). */
+  avgDivisorDays: number;
   avgPaymentsPerCalendarDay: number;
+  /** totalValue / avgDivisorDays (incluye días sin ventas en el denominador). */
+  avgValuePerCalendarDay: number;
   avgValuePerPayment: number;
   minValueDay: { day: number; sum: number } | null;
   maxValueDay: { day: number; sum: number } | null;
@@ -92,7 +158,8 @@ export function aggregateMonth(
   rows: PaymentByMonthRow[],
   year: number,
   month: number,
-  timeZone: string = PAYMENTS_STATS_TIMEZONE
+  timeZone: string = PAYMENTS_STATS_TIMEZONE,
+  asOf: Date = new Date()
 ): MonthAggregate {
   const dim = daysInMonth(year, month);
   const y = String(year);
@@ -118,8 +185,12 @@ export function aggregateMonth(
 
   const totalPayments = counts.reduce((a, b) => a + b, 0);
   const totalValue = sums.reduce((a, b) => a + b, 0);
+  const avgDivisorDays = averageDivisorDays(year, month, dim, asOf, timeZone);
   const avgPaymentsPerCalendarDay =
-    dim > 0 ? totalPayments / dim : 0;
+    avgDivisorDays > 0 ? totalPayments / avgDivisorDays : 0;
+  const avgValuePerCalendarDay =
+    avgDivisorDays > 0 ? totalValue / avgDivisorDays : 0;
+
   const avgValuePerPayment =
     totalPayments > 0 ? totalValue / totalPayments : 0;
 
@@ -144,7 +215,9 @@ export function aggregateMonth(
     sums,
     totalPayments,
     totalValue,
+    avgDivisorDays,
     avgPaymentsPerCalendarDay,
+    avgValuePerCalendarDay,
     avgValuePerPayment,
     minValueDay,
     maxValueDay,
