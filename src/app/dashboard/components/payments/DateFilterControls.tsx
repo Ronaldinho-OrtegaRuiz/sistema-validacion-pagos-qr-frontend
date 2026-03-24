@@ -92,7 +92,7 @@ export default function DateFilterControls({
             className="text-xs font-semibold"
             style={{ color: "var(--primary-700)" }}
           >
-            Solo hoy y 3 días atrás (Colombia)
+            Solo hoy y 3 días atrás
           </span>
         )}
       </div>
