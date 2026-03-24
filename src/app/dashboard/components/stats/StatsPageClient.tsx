@@ -134,18 +134,21 @@ export default function StatsPageClient() {
       </div>
 
       <div className="mt-6 flex flex-wrap items-end gap-4">
-        <label className="flex flex-col gap-1 text-sm font-semibold text-zinc-700">
+        <label
+          className="flex flex-col gap-1 text-sm font-semibold"
+          style={{ color: "var(--primary-800)" }}
+        >
           Mes
           <select
             value={month}
             disabled={loading}
             onChange={(e) => setMonth(Number(e.target.value))}
-            className="min-w-[10rem] rounded-xl border-2 px-3 py-2 font-semibold outline-none"
+            className="min-w-[10rem] cursor-pointer rounded-xl border-2 px-3 py-2 font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--primary-400)] disabled:cursor-not-allowed disabled:opacity-60"
             style={{
-              borderColor: "var(--primary-300)",
-              color: "var(--primary-800)",
+              borderColor: "var(--primary-400)",
+              color: "var(--foreground)",
               backgroundColor:
-                "color-mix(in srgb, var(--primary-600) 8%, white)",
+                "color-mix(in srgb, var(--primary-600) 14%, var(--background))",
             }}
           >
             {MONTH_NAMES_ES.map((name, i) => (
@@ -167,7 +170,14 @@ export default function StatsPageClient() {
       </div>
 
       {error ? (
-        <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <div
+          className="mt-6 rounded-xl border px-4 py-3 text-sm font-medium"
+          style={{
+            borderColor: "color-mix(in srgb, #f87171 45%, var(--primary-200))",
+            backgroundColor: "color-mix(in srgb, #ef4444 14%, var(--background))",
+            color: "var(--foreground)",
+          }}
+        >
           {error}
         </div>
       ) : null}
@@ -179,7 +189,7 @@ export default function StatsPageClient() {
             style={{
               borderColor: "var(--primary-200)",
               backgroundColor:
-                "color-mix(in srgb, var(--primary-600) 4%, white)",
+                "color-mix(in srgb, var(--primary-600) 8%, var(--background))",
             }}
           >
             <h2
@@ -193,8 +203,9 @@ export default function StatsPageClient() {
                 className="rounded-xl border px-3 py-2 font-semibold"
                 style={{
                   borderColor: "var(--primary-200)",
-                  backgroundColor: "white",
-                  color: "var(--primary-800)",
+                  backgroundColor:
+                    "color-mix(in srgb, var(--primary-600) 12%, var(--background))",
+                  color: "var(--foreground)",
                 }}
               >
                 Total pagos (mes):{" "}
@@ -206,8 +217,9 @@ export default function StatsPageClient() {
                 className="rounded-xl border px-3 py-2 font-semibold"
                 style={{
                   borderColor: "var(--primary-200)",
-                  backgroundColor: "white",
-                  color: "var(--primary-800)",
+                  backgroundColor:
+                    "color-mix(in srgb, var(--primary-600) 12%, var(--background))",
+                  color: "var(--foreground)",
                 }}
               >
                 Promedio pagos / día (
@@ -239,8 +251,12 @@ export default function StatsPageClient() {
               .
             </p>
             <div
-              className="mt-4 rounded-xl border bg-white p-3"
-              style={{ borderColor: "var(--primary-200)" }}
+              className="mt-4 rounded-xl border p-3"
+              style={{
+                borderColor: "var(--primary-200)",
+                backgroundColor:
+                  "color-mix(in srgb, var(--primary-600) 10%, var(--background))",
+              }}
             >
               <PaymentsLineChart
                 dayLabels={series.dayLabels}
@@ -255,7 +271,7 @@ export default function StatsPageClient() {
             style={{
               borderColor: "var(--primary-200)",
               backgroundColor:
-                "color-mix(in srgb, var(--primary-600) 4%, white)",
+                "color-mix(in srgb, var(--primary-600) 8%, var(--background))",
             }}
           >
             <h2
@@ -269,8 +285,9 @@ export default function StatsPageClient() {
                 className="rounded-xl border px-3 py-2 font-semibold"
                 style={{
                   borderColor: "var(--primary-200)",
-                  backgroundColor: "white",
-                  color: "var(--primary-800)",
+                  backgroundColor:
+                    "color-mix(in srgb, var(--primary-600) 12%, var(--background))",
+                  color: "var(--foreground)",
                 }}
               >
                 Día con menor total:{" "}
@@ -284,8 +301,9 @@ export default function StatsPageClient() {
                 className="rounded-xl border px-3 py-2 font-semibold"
                 style={{
                   borderColor: "var(--primary-200)",
-                  backgroundColor: "white",
-                  color: "var(--primary-800)",
+                  backgroundColor:
+                    "color-mix(in srgb, var(--primary-600) 12%, var(--background))",
+                  color: "var(--foreground)",
                 }}
               >
                 Día con mayor total:{" "}
@@ -299,8 +317,9 @@ export default function StatsPageClient() {
                 className="rounded-xl border px-3 py-2 font-semibold"
                 style={{
                   borderColor: "var(--primary-200)",
-                  backgroundColor: "white",
-                  color: "var(--primary-800)",
+                  backgroundColor:
+                    "color-mix(in srgb, var(--primary-600) 12%, var(--background))",
+                  color: "var(--foreground)",
                 }}
               >
                 Promedio valor / día (
@@ -315,8 +334,9 @@ export default function StatsPageClient() {
                 className="rounded-xl border px-3 py-2 font-semibold"
                 style={{
                   borderColor: "var(--primary-200)",
-                  backgroundColor: "white",
-                  color: "var(--primary-800)",
+                  backgroundColor:
+                    "color-mix(in srgb, var(--primary-600) 12%, var(--background))",
+                  color: "var(--foreground)",
                 }}
               >
                 Promedio valor / pago QR:{" "}
@@ -334,8 +354,12 @@ export default function StatsPageClient() {
               Pasa el mouse sobre una barra: total del día.
             </p>
             <div
-              className="mt-4 rounded-xl border bg-white p-3"
-              style={{ borderColor: "var(--primary-200)" }}
+              className="mt-4 rounded-xl border p-3"
+              style={{
+                borderColor: "var(--primary-200)",
+                backgroundColor:
+                  "color-mix(in srgb, var(--primary-600) 10%, var(--background))",
+              }}
             >
               <ValueBarChart
                 dayLabels={series.dayLabels}
@@ -349,7 +373,12 @@ export default function StatsPageClient() {
       ) : null}
 
       {!error && !series && loading ? (
-        <p className="mt-8 text-sm text-zinc-500">Cargando datos del mes…</p>
+        <p
+          className="mt-8 text-sm font-medium"
+          style={{ color: "var(--primary-700)" }}
+        >
+          Cargando datos del mes…
+        </p>
       ) : null}
     </section>
   );

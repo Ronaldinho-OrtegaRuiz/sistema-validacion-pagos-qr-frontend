@@ -32,15 +32,17 @@ function ChartTooltipPortal({ tip }: { tip: TipViewport | null }) {
 
   const node = (
     <div
-      className="pointer-events-none max-w-[min(90vw,280px)] rounded-lg border bg-white px-2 py-1 text-xs font-semibold shadow-lg"
+      className="pointer-events-none max-w-[min(90vw,280px)] rounded-lg border px-2 py-1 text-xs font-semibold shadow-lg"
       style={{
         position: "fixed",
         left: tip.clientX,
         top: tip.clientY,
         zIndex: 500,
         borderColor: "var(--primary-200)",
-        color: "var(--primary-800)",
+        backgroundColor: "var(--background)",
+        color: "var(--foreground)",
         transform,
+        boxShadow: "0 8px 24px color-mix(in srgb, var(--foreground) 12%, transparent)",
       }}
     >
       {tip.label}
@@ -109,7 +111,8 @@ export function PaymentsLineChart({
               y1={y}
               x2={PAD_L + innerW}
               y2={y}
-              stroke="var(--primary-100)"
+              stroke="var(--primary-200)"
+              strokeOpacity={0.85}
               strokeWidth={1}
             />
           );
@@ -142,7 +145,7 @@ export function PaymentsLineChart({
             cy={p.y}
             r={p.c > 0 ? 5 : 3}
             fill={p.c > 0 ? "var(--primary-600)" : "var(--primary-200)"}
-            stroke="white"
+            stroke="var(--background)"
             strokeWidth={1.5}
             className="cursor-pointer"
             onMouseEnter={(e) =>
@@ -166,7 +169,8 @@ export function PaymentsLineChart({
           x={PAD_L}
           y={H - 6}
           fontSize={11}
-          fill="var(--primary-700)"
+          fill="var(--foreground)"
+          fillOpacity={0.85}
           fontWeight={600}
         >
           Día del mes
@@ -216,7 +220,8 @@ export function ValueBarChart({
               y1={y}
               x2={PAD_L + innerW}
               y2={y}
-              stroke="var(--primary-100)"
+              stroke="var(--primary-200)"
+              strokeOpacity={0.85}
               strokeWidth={1}
             />
           );
@@ -258,7 +263,8 @@ export function ValueBarChart({
           x={PAD_L}
           y={H - 6}
           fontSize={11}
-          fill="var(--primary-700)"
+          fill="var(--foreground)"
+          fillOpacity={0.85}
           fontWeight={600}
         >
           Día del mes
