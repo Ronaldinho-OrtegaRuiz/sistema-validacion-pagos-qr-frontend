@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { formatValorCOPTable } from "@/lib/money-format";
 import type { PaymentItem } from "@/lib/payments";
 import { SCROLL_ROW_THRESHOLD } from "./constants";
 
@@ -13,6 +14,7 @@ type Props = {
   loading?: boolean;
 };
 
+/** Misma idea que la captura: 24 h, HH:mm (ej. 13:44). */
 function formatHora(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
@@ -20,6 +22,7 @@ function formatHora(iso: string): string {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
+    hourCycle: "h23",
   });
 }
 
@@ -201,7 +204,7 @@ export default function ClientsTable({
                         fontWeight: 600,
                       }}
                     >
-                      {r.value}
+                      {formatValorCOPTable(r.value)}
                     </td>
                     <td
                       style={{

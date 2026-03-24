@@ -1,11 +1,12 @@
-@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&family=Source+Code+Pro:wght@600;700&display=swap");
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 
-  --font-sidebar-title: "DM Sans", system-ui, sans-serif;
+  /* Título sidebar — Source Code Pro (Google Fonts) */
+  --font-sidebar-title: "Source Code Pro", ui-monospace, monospace;
   --font-sidebar-body: "DM Sans", system-ui, sans-serif;
 
   /* Primary base: cambia SOLO este valor y todo se actualiza */

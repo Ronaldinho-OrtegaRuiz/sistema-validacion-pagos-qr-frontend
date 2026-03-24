@@ -107,11 +107,6 @@ export default function StatsPageClient() {
       >
         Estadísticas
       </h1>
-      <p className="mt-1 text-sm text-zinc-600">
-        Pagos por día y suma de valores del mes (año según servidor si no hay
-        datos aún; con datos se toma el año de las fechas devueltas). Zona:{" "}
-        <code className="rounded bg-zinc-100 px-1">PAYMENTS_TZ</code>.
-      </p>
 
       <div className="mt-6 w-full max-w-4xl">
         <StoreBadges

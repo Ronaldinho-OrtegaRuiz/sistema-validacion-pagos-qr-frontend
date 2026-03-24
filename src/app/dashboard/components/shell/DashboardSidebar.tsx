@@ -89,6 +89,7 @@ export default function DashboardSidebar({
             className="leading-none tracking-wider"
             style={{
               fontFamily: "var(--font-sidebar-title)",
+              fontWeight: 700,
               color: "var(--primary-700)",
               fontSize: "28px",
             }}

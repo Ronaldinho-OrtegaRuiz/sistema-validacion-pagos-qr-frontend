@@ -1,10 +1,13 @@
 "use client";
 
+import { registerApiRequestLoadingBridge } from "@/lib/api-request-loading";
 import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -55,6 +58,30 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo(() => ({ show }), [show]);
+
+  /** Toast persistente con spinner mientras haya peticiones al API en curso. */
+  const loadingDismissRef = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    registerApiRequestLoadingBridge({
+      onLoadingStart: () => {
+        if (loadingDismissRef.current) return;
+        loadingDismissRef.current = show(
+          "Cargando respuesta…",
+          "loading",
+          { persistent: true }
+        );
+      },
+      onLoadingEnd: () => {
+        loadingDismissRef.current?.();
+        loadingDismissRef.current = null;
+      },
+    });
+    return () => {
+      registerApiRequestLoadingBridge(null);
+      loadingDismissRef.current?.();
+      loadingDismissRef.current = null;
+    };
+  }, [show]);
 
   return (
     <ToastContext.Provider value={value}>

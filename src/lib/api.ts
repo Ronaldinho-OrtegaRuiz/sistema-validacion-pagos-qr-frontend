@@ -1,3 +1,7 @@
+import {
+  notifyApiRequestEnd,
+  notifyApiRequestStart,
+} from "@/lib/api-request-loading";
 import { getToken } from "@/lib/auth-storage";
 
 const DEFAULT_API =
@@ -41,45 +45,50 @@ export async function postLogin(
   username: string,
   password: string
 ): Promise<LoginSuccess> {
-  const url = `${getApiBaseUrl()}/login`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
-  });
-
-  let data: unknown = {};
+  notifyApiRequestStart();
   try {
-    data = await res.json();
-  } catch {
-    data = {};
+    const url = `${getApiBaseUrl()}/login`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+
+    let data: unknown = {};
+    try {
+      data = await res.json();
+    } catch {
+      data = {};
+    }
+
+    if (!res.ok) {
+      throw new LoginRequestError(
+        `Login failed: ${res.status}`,
+        res.status,
+        data
+      );
+    }
+
+    const token =
+      typeof data === "object" &&
+      data !== null &&
+      "token" in data &&
+      typeof (data as { token: unknown }).token === "string"
+        ? (data as LoginSuccess).token
+        : "";
+
+    if (!token) {
+      throw new LoginRequestError(
+        "Respuesta sin token",
+        res.status,
+        data
+      );
+    }
+
+    return { token };
+  } finally {
+    notifyApiRequestEnd();
   }
-
-  if (!res.ok) {
-    throw new LoginRequestError(
-      `Login failed: ${res.status}`,
-      res.status,
-      data
-    );
-  }
-
-  const token =
-    typeof data === "object" &&
-    data !== null &&
-    "token" in data &&
-    typeof (data as { token: unknown }).token === "string"
-      ? (data as LoginSuccess).token
-      : "";
-
-  if (!token) {
-    throw new LoginRequestError(
-      "Respuesta sin token",
-      res.status,
-      data
-    );
-  }
-
-  return { token };
 }
 
 /** Mensaje legible según status y cuerpo FastAPI. */
@@ -101,7 +110,7 @@ export function loginErrorMessage(status: number, body: unknown): string {
   return "No se pudo iniciar sesión. Intenta nuevamente.";
 }
 
-/** fetch con Authorization Bearer (para futuras rutas). */
+/** fetch con Authorization Bearer + toast de carga global (ver ToastProvider). */
 export async function fetchWithAuth(
   input: string | URL,
   init: RequestInit = {}
@@ -109,5 +118,10 @@ export async function fetchWithAuth(
   const token = getToken();
   const headers = new Headers(init.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
-  return fetch(input, { ...init, headers });
+  notifyApiRequestStart();
+  try {
+    return await fetch(input, { ...init, headers });
+  } finally {
+    notifyApiRequestEnd();
+  }
 }
