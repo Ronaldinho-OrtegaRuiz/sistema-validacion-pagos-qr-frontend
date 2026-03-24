@@ -235,20 +235,7 @@ export default function StatsPageClient() {
               className="mt-2 text-xs"
               style={{ color: "var(--primary-700)" }}
             >
-              Pasa el mouse por un punto: cantidad de pagos con QR ese día. Cada
-              barra/punto usa el día en{" "}
-              <strong>America/Bogota</strong> (como el filtro de inicio); si el
-              API usa otra zona, configura la variable{" "}
-              <code
-                className="rounded px-1 font-mono text-[11px]"
-                style={{
-                  backgroundColor: "color-mix(in srgb, var(--primary-600) 12%, var(--background))",
-                  color: "var(--foreground)",
-                }}
-              >
-                NEXT_PUBLIC_PAYMENTS_TZ
-              </code>
-              .
+              Pasa el mouse por un punto: cantidad de pagos con QR ese día.
             </p>
             <div
               className="mt-4 rounded-xl border p-3"
