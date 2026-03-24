@@ -20,6 +20,9 @@ type Props = {
   onRangeFromChange: (value: string) => void;
   onRangeToChange: (value: string) => void;
   disabled?: boolean;
+  /** false = solo día concreto, sin rango; fechas acotadas por min/max (usuario no admin). */
+  fullDateAccess?: boolean;
+  dateBounds?: { min: string; max: string };
 };
 
 export default function DateFilterControls({
@@ -32,7 +35,16 @@ export default function DateFilterControls({
   onRangeFromChange,
   onRangeToChange,
   disabled,
+  fullDateAccess = true,
+  dateBounds,
 }: Props) {
+  const bound =
+    !fullDateAccess && dateBounds
+      ? { min: dateBounds.min, max: dateBounds.max }
+      : undefined;
+
+  const modeList = fullDateAccess ? modes : modes.filter((m) => m.id === "especifica");
+
   return (
     <div className="flex w-full flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -42,38 +54,47 @@ export default function DateFilterControls({
         >
           Fecha:
         </span>
-        <div
-          className="inline-flex flex-wrap overflow-hidden rounded-xl border"
-          style={{
-            borderColor: "var(--primary-200)",
-            backgroundColor: "var(--primary-50)",
-          }}
-        >
-          {modes.map((m, idx) => {
-            const active = mode === m.id;
-            return (
-              <button
-                key={m.id}
-                type="button"
-                disabled={disabled}
-                onClick={() => onModeChange(m.id)}
-                className="px-3 py-2 text-xs font-semibold transition-colors sm:text-sm sm:px-4"
-                style={{
-                  borderLeft:
-                    idx === 0
-                      ? "none"
-                      : "1px solid var(--primary-200)",
-                  backgroundColor: active
-                    ? "var(--primary-600)"
-                    : "transparent",
-                  color: active ? "white" : "var(--primary-700)",
-                }}
-              >
-                {m.label}
-              </button>
-            );
-          })}
-        </div>
+        {fullDateAccess ? (
+          <div
+            className="inline-flex flex-wrap overflow-hidden rounded-xl border"
+            style={{
+              borderColor: "var(--primary-200)",
+              backgroundColor: "var(--primary-50)",
+            }}
+          >
+            {modeList.map((m, idx) => {
+              const active = mode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => onModeChange(m.id)}
+                  className="px-3 py-2 text-xs font-semibold transition-colors sm:text-sm sm:px-4"
+                  style={{
+                    borderLeft:
+                      idx === 0
+                        ? "none"
+                        : "1px solid var(--primary-200)",
+                    backgroundColor: active
+                      ? "var(--primary-600)"
+                      : "transparent",
+                    color: active ? "white" : "var(--primary-700)",
+                  }}
+                >
+                  {m.label}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <span
+            className="text-xs font-semibold"
+            style={{ color: "var(--primary-700)" }}
+          >
+            Solo hoy y 3 días atrás (Colombia)
+          </span>
+        )}
       </div>
 
       {mode === "especifica" ? (
@@ -87,6 +108,8 @@ export default function DateFilterControls({
           <input
             type="date"
             value={specificDate}
+            min={bound?.min}
+            max={bound?.max}
             disabled={disabled}
             onChange={(e) => onSpecificDateChange(e.target.value)}
             className={inputClass}
@@ -100,7 +123,7 @@ export default function DateFilterControls({
         </label>
       ) : null}
 
-      {mode === "rango" ? (
+      {mode === "rango" && fullDateAccess ? (
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           <label className="flex flex-wrap items-center gap-2">
             <span

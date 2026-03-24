@@ -1,7 +1,13 @@
 "use client";
 
 import { useToast } from "@/components/ToastProvider";
-import { getToken, removeToken } from "@/lib/auth-storage";
+import { getAuthUsername, getToken, removeToken } from "@/lib/auth-storage";
+import {
+  clampPaymentsDateQueryPart,
+  clampYmd,
+  nonAdminDateBounds,
+} from "@/lib/payment-date-bounds";
+import { canAccessStats } from "@/lib/stats-access";
 import {
   detailFromBody,
   getPayments,
@@ -62,6 +68,9 @@ export default function DashboardPaymentsSection() {
   const toast = useToast();
 
   const [drogueriaId, setDrogueriaId] = useState(DROGUERIA_RICKY_ID);
+  const [sessionUser, setSessionUser] = useState<string | null | undefined>(
+    undefined
+  );
   const [dateMode, setDateMode] = useState<PaymentDateMode>("especifica");
   const [specificDate, setSpecificDate] = useState(() => todayOnDateLocal());
   const [rangeFrom, setRangeFrom] = useState(() => todayOnDateLocal());
@@ -78,6 +87,23 @@ export default function DashboardPaymentsSection() {
 
   const loadRef = useRef<() => Promise<void>>(undefined);
 
+  const restrictPaymentDates =
+    sessionUser !== undefined && !canAccessStats(sessionUser);
+
+  useEffect(() => {
+    setSessionUser(getAuthUsername());
+  }, []);
+
+  useEffect(() => {
+    if (sessionUser === undefined) return;
+    if (canAccessStats(sessionUser)) return;
+    const { min, max } = nonAdminDateBounds();
+    setDateMode((m) => (m === "rango" ? "especifica" : m));
+    setSpecificDate((s) => clampYmd(s || max, min, max));
+    setRangeFrom((r) => clampYmd(r || max, min, max));
+    setRangeTo((r) => clampYmd(r || max, min, max));
+  }, [sessionUser]);
+
   const totalLabel = useMemo(() => {
     const today = todayOnDateLocal();
     if (dateMode === "especifica") return `Total (${specificDate || today})`;
@@ -91,13 +117,19 @@ export default function DashboardPaymentsSection() {
     setLoading(true);
     try {
       const today = todayOnDateLocal();
-      const datePart = buildDateQuery(
+      let datePart = buildDateQuery(
         dateMode,
         today,
         specificDate,
         rangeFrom,
         rangeTo
       );
+      if (restrictPaymentDates) {
+        datePart = clampPaymentsDateQueryPart(
+          datePart,
+          nonAdminDateBounds()
+        ) as typeof datePart;
+      }
 
       const result = await getPayments({
         page,
@@ -154,6 +186,7 @@ export default function DashboardPaymentsSection() {
     rangeFrom,
     rangeTo,
     drogueriaId,
+    restrictPaymentDates,
     router,
     toast,
   ]);
@@ -246,7 +279,12 @@ export default function DashboardPaymentsSection() {
               onModeChange={handleDateModeChange}
               specificDate={specificDate}
               onSpecificDateChange={(v) => {
-                setSpecificDate(v);
+                if (restrictPaymentDates) {
+                  const { min, max } = nonAdminDateBounds();
+                  setSpecificDate(clampYmd(v, min, max));
+                } else {
+                  setSpecificDate(v);
+                }
                 setPage(1);
               }}
               rangeFrom={rangeFrom}
@@ -260,6 +298,10 @@ export default function DashboardPaymentsSection() {
                 setPage(1);
               }}
               disabled={loading}
+              fullDateAccess={!restrictPaymentDates}
+              dateBounds={
+                restrictPaymentDates ? nonAdminDateBounds() : undefined
+              }
             />
           </div>
 
