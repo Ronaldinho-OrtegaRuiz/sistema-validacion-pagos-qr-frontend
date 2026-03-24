@@ -12,7 +12,7 @@ export default function DashboardShell({
 
   return (
     <div
-      className="flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden bg-gradient-to-b from-[color:var(--primary-50)] via-white to-white"
+      className="flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden bg-gradient-to-b from-[color:var(--primary-50)] via-[color:var(--background)] to-[color:var(--background)]"
       style={{ overflowX: "hidden" }}
     >
       {/* Botón hamburger (solo móvil) */}

@@ -1,7 +1,18 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { Providers } from "./providers";
 import "./globals.css";
+
+/** Evita parpadeo del color primario antes del primer paint. */
+const PRIMARY_BOOTSTRAP = `
+(function(){
+  try {
+    var p = localStorage.getItem('app_primary_hex');
+    if (p && /^#[0-9A-Fa-f]{6}$/.test(p)) document.documentElement.style.setProperty('--primary-600', p);
+  } catch (e) {}
+})();
+`;
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +40,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <Script
+          id="primary-bootstrap"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: PRIMARY_BOOTSTRAP }}
+        />
         <Providers>{children}</Providers>
       </body>
     </html>

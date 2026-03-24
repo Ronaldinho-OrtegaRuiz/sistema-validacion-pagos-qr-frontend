@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import SidebarAppearanceControls from "./SidebarAppearanceControls";
 
 function IconBag() {
   return (
@@ -78,8 +79,8 @@ export default function DashboardSidebar({
     <aside
       className="flex h-full w-64 flex-col px-4 py-6"
       style={{
-        // “Más claro” que el primary, pero que no sea tan blanco como el fondo.
-        backgroundColor: "color-mix(in srgb, var(--primary-200) 35%, white)",
+        backgroundColor:
+          "color-mix(in srgb, var(--primary-200) 35%, var(--background))",
         fontFamily: "var(--font-sidebar-body)",
       }}
     >
@@ -132,7 +133,7 @@ export default function DashboardSidebar({
         ) : null}
       </div>
 
-      <div className="mt-4 flex flex-col gap-2">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
         {items.map((it) => {
           const selected = isSelected(it.href);
           return (
@@ -156,6 +157,8 @@ export default function DashboardSidebar({
           );
         })}
       </div>
+
+      <SidebarAppearanceControls />
     </aside>
   );
 }
