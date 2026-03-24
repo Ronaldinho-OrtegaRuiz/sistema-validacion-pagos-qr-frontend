@@ -62,7 +62,7 @@ export default function DateFilterControls({
                   borderLeft:
                     idx === 0
                       ? "none"
-                      : "1px solid color-mix(in srgb, var(--primary-200) 80%, white)",
+                      : "1px solid var(--primary-200)",
                   backgroundColor: active
                     ? "var(--primary-600)"
                     : "transparent",
@@ -92,8 +92,9 @@ export default function DateFilterControls({
             className={inputClass}
             style={{
               borderColor: "var(--primary-400)",
-              backgroundColor: "color-mix(in srgb, var(--primary-600) 8%, white)",
-              color: "var(--primary-800)",
+              backgroundColor:
+                "color-mix(in srgb, var(--primary-600) 12%, var(--background))",
+              color: "var(--foreground)",
             }}
           />
         </label>
@@ -117,8 +118,8 @@ export default function DateFilterControls({
               style={{
                 borderColor: "var(--primary-400)",
                 backgroundColor:
-                  "color-mix(in srgb, var(--primary-600) 8%, white)",
-                color: "var(--primary-800)",
+                  "color-mix(in srgb, var(--primary-600) 12%, var(--background))",
+                color: "var(--foreground)",
               }}
             />
           </label>
@@ -138,8 +139,8 @@ export default function DateFilterControls({
               style={{
                 borderColor: "var(--primary-400)",
                 backgroundColor:
-                  "color-mix(in srgb, var(--primary-600) 8%, white)",
-                color: "var(--primary-800)",
+                  "color-mix(in srgb, var(--primary-600) 12%, var(--background))",
+                color: "var(--foreground)",
               }}
             />
           </label>

@@ -4,11 +4,13 @@ import Script from "next/script";
 import { Providers } from "./providers";
 import "./globals.css";
 
-/** Evita parpadeo del color primario antes del primer paint. */
-const PRIMARY_BOOTSTRAP = `
+/** Tema + color primario antes del primer paint. */
+const THEME_BOOTSTRAP = `
 (function(){
   try {
+    var t = localStorage.getItem('app_theme');
     var p = localStorage.getItem('app_primary_hex');
+    document.documentElement.setAttribute('data-theme', (t === 'dark' || t === 'light') ? t : 'light');
     if (p && /^#[0-9A-Fa-f]{6}$/.test(p)) document.documentElement.style.setProperty('--primary-600', p);
   } catch (e) {}
 })();
@@ -38,12 +40,14 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      data-theme="light"
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
         <Script
-          id="primary-bootstrap"
+          id="theme-bootstrap"
           strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: PRIMARY_BOOTSTRAP }}
+          dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }}
         />
         <Providers>{children}</Providers>
       </body>

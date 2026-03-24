@@ -58,8 +58,9 @@ export default function PaymentsPaginationView({
             className="w-[4rem] shrink-0 cursor-pointer rounded-xl border-2 py-2 pl-2.5 pr-1 text-sm font-semibold tabular-nums outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--primary-400)] disabled:cursor-not-allowed disabled:opacity-60"
             style={{
               borderColor: "var(--primary-400)",
-              backgroundColor: "color-mix(in srgb, var(--primary-600) 10%, white)",
-              color: "var(--primary-800)",
+              backgroundColor:
+                "color-mix(in srgb, var(--primary-600) 14%, var(--background))",
+              color: "var(--foreground)",
             }}
           >
             {PAGE_SIZE_OPTIONS.map((n) => (

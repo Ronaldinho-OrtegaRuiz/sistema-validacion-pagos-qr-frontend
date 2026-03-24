@@ -57,7 +57,8 @@ export default function ClientsTable({
       className="w-full overflow-hidden rounded-2xl border"
       style={{
         borderColor: "var(--primary-200)",
-        backgroundColor: "color-mix(in srgb, var(--primary-600) 5%, white)",
+        backgroundColor:
+          "color-mix(in srgb, var(--primary-600) 6%, var(--background))",
       }}
     >
       <div
@@ -132,7 +133,7 @@ export default function ClientsTable({
               <tr
                 style={{
                   backgroundColor:
-                    "color-mix(in srgb, var(--primary-600) 8%, white)",
+                    "color-mix(in srgb, var(--primary-600) 10%, var(--background))",
                 }}
               >
                 <td
@@ -151,7 +152,7 @@ export default function ClientsTable({
               <tr
                 style={{
                   backgroundColor:
-                    "color-mix(in srgb, var(--primary-600) 8%, white)",
+                    "color-mix(in srgb, var(--primary-600) 10%, var(--background))",
                 }}
               >
                 <td
@@ -171,8 +172,8 @@ export default function ClientsTable({
                 const rowNum = (page - 1) * pageSize + idx + 1;
                 const zebra =
                   idx % 2 === 0
-                    ? "color-mix(in srgb, var(--primary-600) 7%, white)"
-                    : "color-mix(in srgb, var(--primary-600) 12%, white)";
+                    ? "color-mix(in srgb, var(--primary-600) 8%, var(--background))"
+                    : "color-mix(in srgb, var(--primary-600) 14%, var(--background))";
                 return (
                   <tr
                     key={`${r.message_id}-${r.id}`}
@@ -191,7 +192,7 @@ export default function ClientsTable({
                     <td
                       style={{
                         ...tdStyle,
-                        color: "var(--primary-800)",
+                        color: "var(--foreground)",
                         fontWeight: 600,
                       }}
                     >
@@ -210,7 +211,7 @@ export default function ClientsTable({
                       style={{
                         ...tdStyle,
                         color:
-                          "color-mix(in srgb, var(--primary-800) 88%, black)",
+                          "color-mix(in srgb, var(--foreground) 82%, var(--primary-500))",
                         fontWeight: 600,
                       }}
                     >
